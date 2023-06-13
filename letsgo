@@ -1,0 +1,164 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix,recall_score,plot_roc_curve,precision_score,accuracy_score,f1_score
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import StandardScaler,MinMaxScaler
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import classification_report
+from sklearn.metrics import precision_recall_fscore_support
+data=pd.read_csv(r"C:\Users\SEFA\PycharmProjects\pythonProject\Yapay Zeka Arşiv\veriler.csv")
+x=data.iloc[:,1:4].values
+y=data.iloc[:,4:].values
+lbl=LabelEncoder()
+y[:,0]=lbl.fit_transform(y[:,0])
+y=y.astype("int")
+
+x_train,x_test,y_train,y_test=train_test_split(x,y,random_state=132,test_size=0.33)
+
+#Standart Scaler
+ss=StandardScaler()
+s_x_train=ss.fit_transform(x_train)
+s_x_test=ss.transform(x_test)
+
+#Minmax Scaler
+mm=MinMaxScaler()
+m_x_train=mm.fit_transform(x_train)
+m_x_test=mm.transform(x_test)
+
+
+
+
+
+#without scale: entropy
+dtc=DecisionTreeClassifier(criterion="entropy")
+dtc.fit(x_train,y_train)
+pred1=dtc.predict(x_test)
+confusion_matrix(y_test,pred1)
+as1=accuracy_score(y_test,pred1)
+ps1=precision_score(y_test,pred1)
+rs1=recall_score(y_test,pred1)
+fs1=f1_score(y_test,pred1)
+plot_roc_curve(dtc,x_test,pred1)
+entropy_without=[as1,ps1,rs1,fs1]
+
+#with minmax scale : entropy
+dtc1=DecisionTreeClassifier(criterion="entropy")
+dtc1.fit(m_x_train,y_train)
+pred2=dtc1.predict(m_x_test)
+confusion_matrix(y_test,pred2)
+as2=accuracy_score(y_test,pred2)
+ps2=precision_score(y_test,pred2)
+rs2=recall_score(y_test,pred2)
+fs2=f1_score(y_test,pred2)
+plot_roc_curve(dtc1,m_x_test,pred2)
+entropy_minmax=[as2,ps2,rs2,fs2]
+
+#with standart scaler : entropy
+dtc2=DecisionTreeClassifier(criterion="entropy")
+dtc2.fit(s_x_train,y_train)
+pred3=dtc2.predict(s_x_test)
+confusion_matrix(y_test,pred3)
+as3=accuracy_score(y_test,pred3)
+ps3=precision_score(y_test,pred3)
+rs3=recall_score(y_test,pred3)
+fs3=f1_score(y_test,pred3)
+plot_roc_curve(dtc2,s_x_test,pred2)
+entropy_standart=[as3,ps3,rs3,fs3]
+
+
+
+def decision_try_gini(x1,y1,x2,y2):
+    dtc_f=DecisionTreeClassifier()
+    dtc_f.fit(x1,y1)
+    pred_f=dtc_f.predict(x2)
+    confusion_matrix(y2, pred_f)
+    a = accuracy_score(y2, pred_f)
+    p = precision_score(y2, pred_f)
+    r = recall_score(y2, pred_f)
+    f = f1_score(y2, pred_f)
+    plot_roc_curve(dtc_f, x2, pred_f)
+    return [a,p,r,f]
+
+gini_without=decision_try_gini(x_train,y_train,x_test,y_test)
+gini_minmax=decision_try_gini(m_x_train,y_train,m_x_test,y_test)
+gini_standart=decision_try_gini(s_x_train,y_train,s_x_test,y_test)
+
+
+###############EXTRA ÇALIŞMAAAA
+
+
+import seaborn as sns
+
+df=sns.load_dataset("iris")
+x=df.iloc[:,0:4].values
+y=df.iloc[:,4:5].values
+
+
+
+
+
+x_train,x_test,y_train,y_test=train_test_split(x,y,random_state=132,test_size=0.33)
+
+#Standart Scaler
+ss=StandardScaler()
+s_x_train=ss.fit_transform(x_train)
+s_x_test=ss.transform(x_test)
+
+#Minmax Scaler
+mm=MinMaxScaler()
+m_x_train=mm.fit_transform(x_train)
+m_x_test=mm.transform(x_test)
+
+
+
+def decision_try_gini(x1,y1,x2,y2):
+    dtc_f=DecisionTreeClassifier()
+    dtc_f.fit(x1,y1)
+    pred_f=dtc_f.predict(x2)
+    print(confusion_matrix(y2, pred_f))
+    print(classification_report(y2, pred_f))
+    a = precision_recall_fscore_support(y2, pred_f, average="macro")
+    a = list(a)
+    a[3] = accuracy_score(y2, pred_f)
+    return a
+
+sup_gini_without=decision_try_gini(x_train,y_train,x_test,y_test)
+sup_gini_standart=decision_try_gini(s_x_train,y_train,s_x_test,y_test)
+sup_gini_minmax=decision_try_gini(m_x_train,y_train,m_x_test,y_test)
+
+
+def decision_try_entropy(x1,y1,x2,y2):
+    dtc_f=DecisionTreeClassifier(criterion="entropy")
+    dtc_f.fit(x1,y1)
+    pred_f=dtc_f.predict(x2)
+    print(confusion_matrix(y2, pred_f))
+    print(classification_report(y2, pred_f))
+    a = precision_recall_fscore_support(y2, pred_f, average="macro")
+    a = list(a)
+    a[3] = accuracy_score(y2, pred_f)
+    return a
+
+
+sup_entropy_without=decision_try_entropy(x_train,y_train,x_test,y_test)
+sup_entropy_standart=decision_try_entropy(s_x_train,y_train,s_x_test,y_test)
+sup_entropy_minmax=decision_try_entropy(m_x_train,y_train,m_x_test,y_test)
+
+
+data_last={"gini without scale":sup_gini_without,"gini standart":sup_gini_standart,
+                                "gini minmax":sup_gini_minmax,"entropy without":sup_entropy_without,
+           "entropy standart":sup_entropy_standart,"entropy minmax":sup_entropy_minmax}
+
+data_last=pd.DataFrame(data_last,index=["Precision","Recall","fscore","Accuracy"])
+
+
+writer=pd.ExcelWriter(r'C:\Users\SEFA\OneDrive\Masaüstü\dc.xlsx')
+
+data_last.to_excel(writer)
+writer.save()
+
+
+
+
+
+
